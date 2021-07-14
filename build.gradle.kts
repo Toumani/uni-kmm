@@ -67,6 +67,9 @@ kotlin {
                 implementation("org.jetbrains:kotlin-react-dom:16.13.1-pre.110-kotlin-1.4.0")
                 implementation(npm("react", "16.13.1"))
                 implementation(npm("react-dom", "16.13.1"))
+
+                implementation("org.jetbrains:kotlin-styled:5.2.1-pre.148-kotlin-1.4.21")
+                implementation(npm("styled-components", "~5.2.1"))
             }
         }
     }
