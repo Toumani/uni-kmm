@@ -4,4 +4,5 @@ import kotlinx.serialization.Serializable
 data class Message(
 	val id: Int,
 	val text: String,
+	val send: Boolean
 )

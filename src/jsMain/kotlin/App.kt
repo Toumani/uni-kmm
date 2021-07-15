@@ -14,9 +14,10 @@ external interface AppState : RState {
 class App : RComponent<RProps, AppState>() {
 	override fun AppState.init() {
 		messages = listOf(
-			Message(0, "Bonjour"),
-			Message(1, "Bonjour, ça va ?"),
-			Message(0, "Oui ça va\nEt toi ?")
+			Message(0, "Bonjour", false),
+			Message(1, "Bonjour, ça va ?", true),
+			Message(0, "Oui ça va", false),
+			Message(0, "Et toi ?", false),
 		)
 	}
 
@@ -37,8 +38,11 @@ class App : RComponent<RProps, AppState>() {
 					}
 				}
 				css {
+					display = Display.flex
+					flexDirection = FlexDirection.column
 					flexGrow = 1.0
 					overflowY = Overflow.scroll
+					padding = "0 10px"
 				}
 			}
 			styledDiv { // input area
