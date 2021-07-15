@@ -7,7 +7,19 @@ import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
 import kotlinx.html.js.onSubmitFunction
 
-class App : RComponent<RProps, RState>() {
+external interface AppState : RState {
+	var messages: List<Message>
+}
+
+class App : RComponent<RProps, AppState>() {
+	override fun AppState.init() {
+		messages = listOf(
+			Message(0, "Bonjour"),
+			Message(1, "Bonjour, ça va ?"),
+			Message(0, "Oui ça va\nEt toi ?")
+		)
+	}
+
 	override fun RBuilder.render() {
 		styledHeader {
 			h1 { +"Uni" }
@@ -19,6 +31,11 @@ class App : RComponent<RProps, RState>() {
 		}
 		styledDiv { // Main app body
 			styledDiv {  // Messages area
+				for (m in state.messages) {
+					messageBox {
+						message = m
+					}
+				}
 				css {
 					flexGrow = 1.0
 					overflowY = Overflow.scroll
