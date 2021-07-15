@@ -1,14 +1,20 @@
+import kotlinx.browser.document
 import react.*
 import react.dom.*
 import styled.*
 import kotlinx.css.*
 import kotlinx.html.InputType
+import kotlinx.html.id
 import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
-import kotlinx.html.js.onSubmitFunction
+import kotlinx.html.js.onKeyPressFunction
+import org.w3c.dom.HTMLDivElement
+import org.w3c.dom.HTMLInputElement
+import org.w3c.dom.events.KeyboardEvent
 
 external interface AppState : RState {
 	var messages: List<Message>
+	var message: String
 }
 
 class App : RComponent<RProps, AppState>() {
@@ -18,7 +24,26 @@ class App : RComponent<RProps, AppState>() {
 			Message(1, "Bonjour, ça va ?", true),
 			Message(0, "Oui ça va", false),
 			Message(0, "Et toi ?", false),
+			Message(0, "Ça va je me plains pas", true),
+			Message(0, "Alors quoi de neuf ?", true),
+			Message(0, "Que du vieux", false),
+			Message(0, "Et toi ?", false),
+			Message(0, "Idem", true),
+			Message(0, "On a quand même là la discussion la plus ennuyeuse au monde tu crois pas ?", true),
 		)
+		message = ""
+	}
+
+	fun sendMessage() {
+		if (state.message.isNotEmpty()) {
+			setState(state.apply {
+				messages = state.messages.plus(Message(0, state.message, true))
+				message = ""
+			}) {
+				val messagesArea = document.getElementById("messages-area") as HTMLDivElement
+				messagesArea.scrollTo(0.0, messagesArea.scrollHeight.toDouble())
+			}
+		}
 	}
 
 	override fun RBuilder.render() {
@@ -37,10 +62,14 @@ class App : RComponent<RProps, AppState>() {
 						message = m
 					}
 				}
+				attrs {
+					id = "messages-area"
+				}
 				css {
 					display = Display.flex
 					flexDirection = FlexDirection.column
 					flexGrow = 1.0
+					put("height", "calc(100vh - 140px)")
 					overflowY = Overflow.scroll
 					padding = "0 10px"
 				}
@@ -51,8 +80,17 @@ class App : RComponent<RProps, AppState>() {
 						width = LinearDimension.inherit
 					}
 					attrs {
-						onSubmitFunction = {
-							console.log("Button clicked")
+						value = state.message
+						onChangeFunction = {
+							val target = it.target as HTMLInputElement
+							setState {
+								message = target.value
+							}
+						}
+						onKeyPressFunction = {
+							val keyboardEvent = it.asDynamic().nativeEvent as KeyboardEvent
+							if (keyboardEvent.key == "Enter")
+								sendMessage()
 						}
 					}
 				}
@@ -64,8 +102,9 @@ class App : RComponent<RProps, AppState>() {
 						borderRadius = 25.px
 					}
 					attrs {
+						disabled = state.message.isEmpty()
 						onClickFunction = {
-							console.log("Button clicked")
+							sendMessage()
 						}
 					}
 				}
