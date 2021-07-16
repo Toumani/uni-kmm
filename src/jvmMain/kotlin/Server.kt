@@ -3,6 +3,7 @@ import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.http.cio.websocket.*
 import io.ktor.http.content.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
@@ -15,20 +16,19 @@ import java.util.*
 
 fun main() {
 	val connections = Collections.synchronizedSet<Connection>(LinkedHashSet())
-	val messages = listOf(
-		listOf(
-			Message(0, "Bonjour", false),
-			Message(1, "Bonjour, ça va ?", true),
-			Message(0, "Oui ça va", false),
-			Message(0, "Et toi ?", false),
-			Message(0, "Ça va je me plains pas", true),
-			Message(0, "Alors quoi de neuf ?", true),
-			Message(0, "Que du vieux", false),
-			Message(0, "Et toi ?", false),
-			Message(0, "Idem", true),
-			Message(0, "On a quand même là la discussion la plus ennuyeuse au monde tu crois pas ?", true),
-		)
-	)
+//	val messages = mutableListOf(
+//			Message("Bonjour", false),
+//			Message("Bonjour, ça va ?", true),
+//			Message("Oui ça va", false),
+//			Message("Et toi ?", false),
+//			Message("Ça va je me plains pas", true),
+//			Message("Alors quoi de neuf ?", true),
+//			Message("Que du vieux", false),
+//			Message("Et toi ?", false),
+//			Message("Idem", true),
+//			Message("On a quand même là la discussion la plus ennuyeuse au monde tu crois pas ?", true),
+//	)
+	val messages = mutableListOf<Message>()
 
 	val port = System.getenv("PORT")?.toInt() ?: 9090
 
@@ -69,6 +69,10 @@ fun main() {
 			route(Message.path) {
 				get {
 					call.respond(messages)
+				}
+				post {
+					messages += call.receive<Message>()
+					call.respond(HttpStatusCode.OK)
 				}
 			}
 			webSocket("/ws/send") {

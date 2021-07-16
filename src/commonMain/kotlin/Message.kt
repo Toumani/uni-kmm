@@ -2,10 +2,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Message(
-	val id: Int,
 	val text: String,
-	val send: Boolean
+	val sender: User,
+	val recipient: User,
 ) {
+	val id: Int = text.hashCode()
+
 	companion object {
 		const val path = "/messages"
 	}

@@ -4,10 +4,12 @@ import kotlinx.css.*
 
 external interface MessageBoxProps : RProps {
 	var message: Message
+	var user: User
 }
 
 class MessageBox : RComponent<MessageBoxProps, RState>() {
 	override fun RBuilder.render() {
+		val received = props.message.sender.name != props.user.name
 		styledDiv {
 			+props.message.text
 			css {
@@ -15,8 +17,8 @@ class MessageBox : RComponent<MessageBoxProps, RState>() {
 				margin = "10px 0"
 				padding = "20px"
 				borderRadius = 5.px
-				backgroundColor = if (props.message.send) Color.turquoise else Color.aquamarine
-				alignSelf = if (props.message.send) Align.flexEnd else Align.flexStart
+				backgroundColor = if (received) Color.aquamarine else Color.turquoise
+				alignSelf = if (received) Align.flexStart else Align.flexEnd
 			}
 		}
 	}
