@@ -1,28 +1,13 @@
+import dev.fritz2.binding.watch
+import dev.fritz2.remote.body
+import dev.fritz2.remote.websocket
 import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import kotlinx.css.Color
-import kotlinx.css.Display
-import kotlinx.css.FlexDirection
-import kotlinx.css.JustifyContent
-import kotlinx.css.LinearDimension
-import kotlinx.css.Overflow
-import kotlinx.css.Position
-import kotlinx.css.backgroundColor
-import kotlinx.css.borderRadius
-import kotlinx.css.bottom
-import kotlinx.css.display
-import kotlinx.css.flexDirection
-import kotlinx.css.flexGrow
-import kotlinx.css.height
-import kotlinx.css.justifyContent
-import kotlinx.css.overflowY
-import kotlinx.css.padding
-import kotlinx.css.pct
-import kotlinx.css.position
-import kotlinx.css.px
-import kotlinx.css.width
+import kotlinx.css.*
 import kotlinx.html.InputType
 import kotlinx.html.id
 import kotlinx.html.js.onChangeFunction
@@ -31,13 +16,8 @@ import kotlinx.html.js.onKeyPressFunction
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.events.KeyboardEvent
-import react.RBuilder
-import react.RComponent
-import react.RProps
-import react.RState
-import react.ReactElement
+import react.*
 import react.dom.h1
-import react.setState
 import styled.css
 import styled.styledButton
 import styled.styledDiv
@@ -56,6 +36,7 @@ external interface TchatState : RState {
 
 private val scope = MainScope()
 
+val session = websocket("ws://${window.location.host}/ws/send").connect()
 class Tchat : RComponent<TchatProps, TchatState>() {
 
 	override fun TchatState.init() {
@@ -64,12 +45,9 @@ class Tchat : RComponent<TchatProps, TchatState>() {
 	}
 
 	override fun componentDidMount() {
-		scope.launch {
-			while (true) {
-				fetchMessages()
-				delay(5000)
-			}
-		}
+		session.messages.body.onEach {
+			console.log("Received $it")
+		}.watch() // watch is needed because the message is not bound to html
 	}
 
 	private fun sendMessage() {
@@ -77,6 +55,7 @@ class Tchat : RComponent<TchatProps, TchatState>() {
 			val messageDto = Message(state.message, props.user, props.recipient)
 			setState { message = "" }
 			scope.launch {
+				session.send(messageDto.text)
 				sendMessage(messageDto)
 				fetchMessages()
 			}
