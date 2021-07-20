@@ -1,11 +1,6 @@
-import dev.fritz2.binding.watch
-import dev.fritz2.remote.body
-import dev.fritz2.remote.websocket
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.css.*
 import kotlinx.html.InputType
@@ -15,6 +10,7 @@ import kotlinx.html.js.onClickFunction
 import kotlinx.html.js.onKeyPressFunction
 import org.w3c.dom.HTMLDivElement
 import org.w3c.dom.HTMLInputElement
+import org.w3c.dom.WebSocket
 import org.w3c.dom.events.KeyboardEvent
 import react.*
 import react.dom.h1
@@ -36,7 +32,9 @@ external interface TchatState : RState {
 
 private val scope = MainScope()
 
-val session = websocket("ws://${window.location.host}/ws/send").connect()
+//val session = websocket("ws://${window.location.host}/ws/send").connect()
+val ws = WebSocket("ws://${window.location.host}/ws/send")
+
 class Tchat : RComponent<TchatProps, TchatState>() {
 
 	override fun TchatState.init() {
@@ -45,18 +43,20 @@ class Tchat : RComponent<TchatProps, TchatState>() {
 	}
 
 	override fun componentDidMount() {
-		session.messages.body.onEach {
-			console.log("Received $it")
-		}.watch() // watch is needed because the message is not bound to html
+		ws.onmessage = {
+			console.log(it.data.toString())
+			scope.launch {
+				fetchMessages()
+			}
+		}
 	}
 
 	private fun sendMessage() {
 		if (state.message.isNotEmpty()) {
 			val messageDto = Message(state.message, props.user, props.recipient)
 			setState { message = "" }
+			ws.send(messageDto.toString())
 			scope.launch {
-				session.send(messageDto.text)
-				sendMessage(messageDto)
 				fetchMessages()
 			}
 		}

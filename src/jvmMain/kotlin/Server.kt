@@ -16,18 +16,19 @@ import java.util.*
 
 fun main() {
 	val connections = Collections.synchronizedSet<Connection>(LinkedHashSet())
-	val messages = mutableListOf(
-			Message("Bonjour", false),
-			Message("Bonjour, ça va ?", true),
-			Message("Oui ça va", false),
-			Message("Et toi ?", false),
-			Message("Ça va je me plains pas", true),
-			Message("Alors quoi de neuf ?", true),
-			Message("Que du vieux", false),
-			Message("Et toi ?", false),
-			Message("Idem", true),
-			Message("On a quand même là la discussion la plus ennuyeuse au monde tu crois pas ?", true),
-	)
+//	val messages = mutableListOf(
+//			Message("Bonjour", false),
+//			Message("Bonjour, ça va ?", true),
+//			Message("Oui ça va", false),
+//			Message("Et toi ?", false),
+//			Message("Ça va je me plains pas", true),
+//			Message("Alors quoi de neuf ?", true),
+//			Message("Que du vieux", false),
+//			Message("Et toi ?", false),
+//			Message("Idem", true),
+//			Message("On a quand même là la discussion la plus ennuyeuse au monde tu crois pas ?", true),
+//	)
+	val messages = mutableListOf<Message>()
 
 	val port = System.getenv("PORT")?.toInt() ?: 9090
 
@@ -80,11 +81,12 @@ fun main() {
 				try {
 					for (frame in incoming) {
 						frame as? Frame.Text ?: continue
-						val receivedText = frame.readText()
-						println("Received: $receivedText")
+						val messageString = frame.readText()
+						println("Received: $messageString")
+						messages += Message.fromString(messageString)
 						connections.forEach {
-//							if (it != thisConnection)
-								it.session.send(receivedText)
+							if (it != thisConnection)
+								it.session.send(messageString)
 						}
 					}
 				} catch (e: Exception) {
